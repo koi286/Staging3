@@ -1,4 +1,3 @@
--- データベース作成
 CREATE DATABASE IF NOT EXISTS Keiziban;
 USE Keiziban;
 
@@ -8,10 +7,11 @@ CREATE TABLE users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(50) NOT NULL,
     email VARCHAR(100) NOT NULL,
-    password CHAR(64) NOT NULL
+    password CHAR(64) NOT NULL,
+    active TINYINT(1) NOT NULL DEFAULT 1
 );
 
--- posts テーブル（返信対応: parent_id）
+-- posts テーブル
 DROP TABLE IF EXISTS posts;
 CREATE TABLE posts (
     id INT AUTO_INCREMENT PRIMARY KEY,
