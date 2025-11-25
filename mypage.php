@@ -18,22 +18,34 @@ $stmt->bind_result($current_name,$current_email);
 $stmt->fetch();
 $stmt->close();
 
-// 退会処理（削除はせずセッション破棄のみ）
-if (isset($_POST["delete_account"])) {
-    session_unset();
-    session_destroy();
-    header("Location: register.php?deleted=1");
-    exit();
+/* ---------------------------------------------------------
+   退会処理（退会ボタンが押された場合のみ発動）
+--------------------------------------------------------- */
+if (isset($_POST["do_delete"])) {
+
+    // チェックされているか確認
+    if (isset($_POST["delete_account"]) && $_POST["delete_account"] == "1") {
+        session_unset();
+        session_destroy();
+        header("Location: register.php?deleted=1");
+        exit();
+    } else {
+        $msg = "退会する場合はチェックを入れてください。";
+    }
 }
 
-// プロフィール更新
+/* ---------------------------------------------------------
+   プロフィール更新処理（更新ボタンが押された場合のみ発動）
+--------------------------------------------------------- */
 if (isset($_POST["update_profile"])) {
+
     $name = trim($_POST["name"]);
     $email = trim($_POST["email"]);
     $password = trim($_POST["password"]);
 
-    if ($name!=="" && $email!=="") {
-        if ($password!=="") {
+    if ($name !== "" && $email !== "") {
+
+        if ($password !== "") {
             $hashed = hash("sha256",$password);
             $stmt = $conn->prepare("UPDATE users SET name=?,email=?,password=? WHERE id=?");
             $stmt->bind_param("sssi",$name,$email,$hashed,$user_id);
@@ -41,9 +53,11 @@ if (isset($_POST["update_profile"])) {
             $stmt = $conn->prepare("UPDATE users SET name=?,email=? WHERE id=?");
             $stmt->bind_param("ssi",$name,$email,$user_id);
         }
+
         $stmt->execute();
         $_SESSION["name"] = $name;
         $msg = "プロフィールを更新しました。";
+
     } else {
         $msg = "名前とメールアドレスは必須です。";
     }
@@ -69,20 +83,31 @@ if (isset($_POST["update_profile"])) {
 <?php if (isset($msg)) echo "<p class='message'>".htmlspecialchars($msg)."</p>"; ?>
 
 <form method="post" class="mypage">
+
     <label>名前：</label><br>
     <input type="text" name="name" value="<?php echo htmlspecialchars($current_name); ?>" required><br>
+
     <label>メールアドレス：</label><br>
     <input type="email" name="email" value="<?php echo htmlspecialchars($current_email); ?>" required><br>
+
     <label>新しいパスワード（変更する場合のみ）：</label><br>
     <input type="password" name="password" placeholder="変更しない場合は空欄"><br>
+
+    <!-- 更新専用ボタン -->
     <button type="submit" name="update_profile">更新</button>
 
     <hr>
+
     <label style="color:red;">
-        <input type="checkbox" name="delete_account" value="1" required>
+        <input type="checkbox" name="delete_account" value="1">
         退会する
     </label><br>
-    <button type="submit">退会実行</button>
+
+    <!-- 退会専用ボタン -->
+    <button type="submit" name="do_delete" style="background:red;color:white;">
+        退会実行
+    </button>
+
 </form>
 
 </body>
